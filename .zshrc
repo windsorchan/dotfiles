@@ -120,6 +120,7 @@ alias gco='git checkout'
 alias gcom='git checkout master && git pull --rebase'
 alias grb='git rebase'
 alias grbm='git rebase master'
+alias gpo="git push origin"
 alias gpfo="git push --force origin"
 alias gst='git status'
 alias gbr='git branch'
