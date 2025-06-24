@@ -2,7 +2,6 @@ general.import = [
   "~/.config/alacritty/catppuccin-mocha.toml"
 ]
 
-
 [font]
 size = 10
 
@@ -25,3 +24,9 @@ style = "Retina"
 [font.offset]
 x = 0
 y = 0
+
+[window]
+decorations = "None"
+
+[mouse]
+hide_when_typing = true
