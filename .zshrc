@@ -85,7 +85,8 @@ export LC_ALL=en_US.UTF-8
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
  
-export PATH=$PATH:/home/wchan/bin:/home/wchan/.local/bin:/home/wchan/.cargo/bin:/home/wchan/.local/node_modules/.bin:/home/wchan/data_env/bin
+export EDITOR=nvim
+export PATH=$PATH:$HOME/bin:$HOME/.local/bin:$HOME/.cargo/bin:$HOME/.cache/.bun/bin
 
 export FZF_DEFAULT_OPTS=" \
   --color=bg+:#313244,bg:#1E1E2E,spinner:#F5E0DC,hl:#F38BA8 \
@@ -110,7 +111,6 @@ alias ts='sudo ntpd -qg'
 alias reboot='systemctl reboot'
 alias tailf='tail -f'
 alias vibecode='claude --dangerously-skip-permissions'
-
 alias vim='nvim'
 
 #-------------------------------------------------------------
@@ -144,3 +144,5 @@ alias lt='ls -ltr'         # sort by date, most recent last
 alias lk='ls -lSr'         # sort by size, biggest last
 alias lr='ls -lR'          # recursive ls
 alias tree='tree -Csu'     # nice alternative to 'recursive ls'
+
+alias hyperlane="yarn --cwd ../hyperlane-monorepo workspace @hyperlane-xyz/cli hyperlane"

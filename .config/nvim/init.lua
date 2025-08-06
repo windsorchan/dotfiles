@@ -65,6 +65,13 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "rust",
+  callback = function()
+    vim.opt_local.makeprg = "cargo build"
+  end,
+})
+
 vim.keymap.set("i", "jj", "<ESC>", { desc = "Exit insert mode" })
 vim.keymap.set("n", ",pp", ":set invpaste<CR>:set paste?<CR>", { silent = true, desc = "Toggle paste mode" })
 vim.keymap.set("n", ",tw", ":set nowrap!<CR>", { silent = true, desc = "Toggle word wrap" })
@@ -73,6 +80,7 @@ vim.keymap.set("n", ",cc", ":close<CR>", { silent = true })
 vim.keymap.set("n", ",cw", ":cclose<CR>", { silent = true })
 vim.keymap.set("n", ",ev", ":e $MYVIMRC<CR>", { silent = true, desc = "Edit init.lua" })
 vim.keymap.set("n", ",/", ":set invhlsearch<CR>:set hlsearch?<CR>", { silent = true, desc = "Toggle highlight search" })
+vim.keymap.set("n", ",mr", ":make<CR>", { desc = "Run make" })
 
 -- Plugin setup
 require("lazy").setup({
@@ -86,14 +94,14 @@ require("lazy").setup({
   },
 
   {
-    "ggandor/leap.nvim",
-    config = function()
-      require("leap").add_default_mappings()
-    end,
-  },
-
-  {
     "lewis6991/gitsigns.nvim",
+    config = function()
+      require('gitsigns').setup({
+        diff_opts = {
+          base = 'HEAD',
+        },
+      })
+    end,
   },
 
   {
@@ -121,10 +129,7 @@ require("lazy").setup({
       require("nvim-tree").setup({
         filters = {
           custom = {
-            "\\.ncb$", "\\.suo$", "\\.obj$", "\\.ilk$", "^BuildLog.htm$",
-            "\\.pdb$", "\\.idb$", "\\.embed\\.manifest$", "\\.embed\\.manifest\\.res$",
-            "\\.intermediate\\.manifest$", "^mt.dep$", "\\.o$", "\\.vcproj$",
-            "\\.so$", "\\.so\\.1$", "\\.so\\.1\\.0$"
+            "\\.obj$", "\\.o$", "\\.so$", "\\.so\\.1$", "\\.so\\.1\\.0$"
           },
         },
       })
@@ -156,9 +161,7 @@ require("lazy").setup({
     dependencies = { "folke/snacks.nvim" },
     config = true,
     keys = {
-      { "<leader>a",  nil,                              desc = "AI/Claude Code" },
-      { "<leader>ac", "<cmd>ClaudeCode<cr>",            desc = "Toggle Claude" },
-      { "<leader>af", "<cmd>ClaudeCodeFocus<cr>",       desc = "Focus Claude" },
+      { "<leader>ac", "<cmd>ClaudeCode --dangerously-skip-permissions<cr>", desc = "Toggle Claude" },
       { "<leader>ar", "<cmd>ClaudeCode --resume<cr>",   desc = "Resume Claude" },
       { "<leader>aC", "<cmd>ClaudeCode --continue<cr>", desc = "Continue Claude" },
       { "<leader>ab", "<cmd>ClaudeCodeAdd %<cr>",       desc = "Add current buffer" },
@@ -173,6 +176,37 @@ require("lazy").setup({
       { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny diff" },
     },
   },
+
+  {
+    "tpope/vim-fugitive",
+  },
+
+  {
+    "R-nvim/R.nvim",
+  },
+
+  {
+    "R-nvim/cmp-r",
+    {
+        "hrsh7th/nvim-cmp",
+        config = function()
+            require("cmp").setup({ sources = {{ name = "cmp_r" }}})
+            require("cmp_r").setup({})
+        end,
+    },
+  },
+
+  {
+    "nvim-treesitter/nvim-treesitter",
+    run = ":TSUpdate",
+    config = function ()
+      require("nvim-treesitter.configs").setup({
+        ensure_installed = { "markdown", "markdown_inline", "r", "rnoweb", "yaml", "csv" },
+        highlight = { enable = true },
+      })
+    end
+  },
+
 })
 
 -- Terminal settings for better integration with vim-tmux-navigator
@@ -196,5 +230,10 @@ vim.lsp.config['pyright'] = {
   filetypes = { 'py' },
 }
 
-vim.lsp.enable({ 'rust-analyzer', 'pyright' })
+vim.lsp.config['tsserver'] = {
+  cmd = { 'typescript-language-server', '--stdio' },
+  filetypes = { 'typescript', 'typescriptreact', 'typescript.tsx', 'javascript', 'javascriptreact', 'javascript.jsx' },
+}
+
+vim.lsp.enable({ 'rust-analyzer', 'pyright', 'tsserver' })
 vim.diagnostic.config({ virtual_text = true })
