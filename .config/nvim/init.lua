@@ -94,6 +94,13 @@ require("lazy").setup({
   },
 
   {
+    "ggandor/leap.nvim",
+    config = function()
+      require("leap").create_default_mappings()
+    end,
+  },
+
+  {
     "lewis6991/gitsigns.nvim",
     config = function()
       require('gitsigns').setup({
