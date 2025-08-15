@@ -193,14 +193,58 @@ require("lazy").setup({
   },
 
   {
-    "R-nvim/cmp-r",
-    {
-        "hrsh7th/nvim-cmp",
-        config = function()
-            require("cmp").setup({ sources = {{ name = "cmp_r" }}})
-            require("cmp_r").setup({})
-        end,
+    "hrsh7th/nvim-cmp",
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
     },
+    config = function()
+      local cmp = require("cmp")
+      
+      cmp.setup({
+        mapping = cmp.mapping.preset.insert(),
+        sources = cmp.config.sources({
+          { name = "nvim_lsp" },
+        }, {
+          { name = "buffer" },
+          { name = "path" },
+        }),
+      })
+      
+      -- Set up lspconfig with cmp capabilities
+      local capabilities = require("cmp_nvim_lsp").default_capabilities()
+      
+      -- Update LSP configs with completion capabilities
+      vim.lsp.config['rust-analyzer'] = {
+        cmd = { 'rust-analyzer' },
+        root_markers = { 'Cargo.toml', 'rust-project.json' },
+        filetypes = { 'rust' },
+        capabilities = capabilities,
+      }
+      vim.lsp.config['pyright'] = {
+        cmd = { 'pyright' },
+        filetypes = { 'py' },
+        capabilities = capabilities,
+      }
+      vim.lsp.config['tsserver'] = {
+        cmd = { 'typescript-language-server', '--stdio' },
+        filetypes = { 'typescript', 'typescriptreact', 'typescript.tsx', 'javascript', 'javascriptreact', 'javascript.jsx' },
+        capabilities = capabilities,
+      }
+    end,
+  },
+  
+  {
+    "R-nvim/cmp-r",
+    dependencies = { "hrsh7th/nvim-cmp" },
+    config = function()
+      local cmp = require("cmp")
+      local config = cmp.get_config()
+      table.insert(config.sources, { name = "cmp_r" })
+      cmp.setup(config)
+      require("cmp_r").setup({})
+    end,
   },
 
   {
@@ -226,21 +270,7 @@ vim.api.nvim_create_autocmd("TermOpen", {
   end,
 })
 
-vim.lsp.config['rust-analyzer'] = {
-  cmd = { 'rust-analyzer' },
-  root_markers = { 'Cargo.toml', 'rust-project.json' },
-  filetypes = { 'rust' },
-}
-
-vim.lsp.config['pyright'] = {
-  cmd = { 'pyright' },
-  filetypes = { 'py' },
-}
-
-vim.lsp.config['tsserver'] = {
-  cmd = { 'typescript-language-server', '--stdio' },
-  filetypes = { 'typescript', 'typescriptreact', 'typescript.tsx', 'javascript', 'javascriptreact', 'javascript.jsx' },
-}
-
+-- Enable language servers (configs are set up in nvim-cmp setup)
 vim.lsp.enable({ 'rust-analyzer', 'pyright', 'tsserver' })
+
 vim.diagnostic.config({ virtual_text = true })

@@ -86,7 +86,7 @@ export LC_ALL=en_US.UTF-8
 # export ARCHFLAGS="-arch x86_64"
  
 export EDITOR=nvim
-export PATH=$PATH:$HOME/bin:$HOME/.local/bin:$HOME/.cargo/bin:$HOME/.cache/.bun/bin
+export PATH=$PATH:$HOME/bin:$HOME/.local/bin:$HOME/.local/node_modules/.bin:$HOME/.cargo/bin
 
 export FZF_DEFAULT_OPTS=" \
   --color=bg+:#313244,bg:#1E1E2E,spinner:#F5E0DC,hl:#F38BA8 \
@@ -144,5 +144,3 @@ alias lt='ls -ltr'         # sort by date, most recent last
 alias lk='ls -lSr'         # sort by size, biggest last
 alias lr='ls -lR'          # recursive ls
 alias tree='tree -Csu'     # nice alternative to 'recursive ls'
-
-alias hyperlane="yarn --cwd ../hyperlane-monorepo workspace @hyperlane-xyz/cli hyperlane"
