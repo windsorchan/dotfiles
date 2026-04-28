@@ -74,6 +74,16 @@ plugins=(git vi-mode)
 
 source $ZSH/oh-my-zsh.sh
 
+# Auto-attach to tmux if not already in it
+if [ -n "$PS1" ] && [ -z "$TMUX" ] && command -v tmux >/dev/null 2>&1; then
+  # Check if any session exists
+  if tmux ls >/dev/null 2>&1; then
+    tmux attach-session -t "$(tmux ls -F '#{session_name}' | head -n 1)"
+  else
+    tmux new-session
+  fi
+fi
+
 # User configuration
 
 # export MANPATH="/usr/local/man:$MANPATH"

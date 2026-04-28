@@ -80,7 +80,64 @@ vim.keymap.set("n", ",cc", ":close<CR>", { silent = true })
 vim.keymap.set("n", ",cw", ":cclose<CR>", { silent = true })
 vim.keymap.set("n", ",ev", ":e $MYVIMRC<CR>", { silent = true, desc = "Edit init.lua" })
 vim.keymap.set("n", ",/", ":set invhlsearch<CR>:set hlsearch?<CR>", { silent = true, desc = "Toggle highlight search" })
-vim.keymap.set("n", ",mr", ":make<CR>", { desc = "Run make" })
+
+-- Async make
+vim.keymap.set("n", ",mr", function()
+  vim.fn.writefile({}, vim.o.errorfile)  -- Clear errorfile before build
+  vim.fn.jobstart(vim.o.makeprg, {
+    on_exit = function(_, exit_code)
+      vim.schedule(function()
+        if exit_code == 0 then
+          print("Build succeeded")
+        else
+          vim.cmd("cgetfile " .. vim.o.errorfile)
+          vim.cmd("cwindow")
+        end
+      end)
+    end,
+    stdout_buffered = true,
+    stderr_buffered = true,
+    on_stdout = function(_, data)
+      if data then
+        vim.fn.writefile(data, vim.o.errorfile, "a")
+      end
+    end,
+    on_stderr = function(_, data)
+      if data then
+        vim.fn.writefile(data, vim.o.errorfile, "a")
+      end
+    end
+  })
+  print("Building...")
+end, { desc = "Run make (async)" })
+
+-- Smart buffer delete - keep window with next buffer or empty buffer
+vim.keymap.set("n", ",bd", function()
+  local buf = vim.api.nvim_get_current_buf()
+  local next_buf = vim.fn.bufnr('#')
+  
+  -- Get list of all buffers
+  local bufs = vim.api.nvim_list_bufs()
+  local valid_bufs = {}
+  
+  for _, b in ipairs(bufs) do
+    if vim.api.nvim_buf_is_valid(b) and vim.bo[b].buflisted and b ~= buf then
+      table.insert(valid_bufs, b)
+    end
+  end
+  
+  -- Switch to alternate buffer, next valid buffer, or create new empty buffer
+  if next_buf ~= -1 and next_buf ~= buf and vim.api.nvim_buf_is_valid(next_buf) then
+    vim.api.nvim_set_current_buf(next_buf)
+  elseif #valid_bufs > 0 then
+    vim.api.nvim_set_current_buf(valid_bufs[1])
+  else
+    vim.cmd('enew')
+  end
+  
+  -- Delete the original buffer
+  vim.api.nvim_buf_delete(buf, { force = false })
+end, { silent = true, desc = "Delete buffer, keep window" })
 
 -- Plugin setup
 require("lazy").setup({
@@ -95,9 +152,6 @@ require("lazy").setup({
 
   {
     "ggandor/leap.nvim",
-    config = function()
-      require("leap").create_default_mappings()
-    end,
   },
 
   {
@@ -136,7 +190,7 @@ require("lazy").setup({
       require("nvim-tree").setup({
         filters = {
           custom = {
-            "\\.obj$", "\\.o$", "\\.so$", "\\.so\\.1$", "\\.so\\.1\\.0$"
+            "%.obj$", "%.o$", "%.so$", "%.so%.1$", "%.so%.1%.0$"
           },
         },
       })
@@ -223,8 +277,8 @@ require("lazy").setup({
         capabilities = capabilities,
       }
       vim.lsp.config['pyright'] = {
-        cmd = { 'pyright' },
-        filetypes = { 'py' },
+        cmd = { 'pyright-langserver', '--stdio' },
+        filetypes = { 'python' },
         capabilities = capabilities,
       }
       vim.lsp.config['tsserver'] = {
