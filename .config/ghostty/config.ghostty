@@ -1,0 +1,4 @@
+font-family = "FiraCode Nerd Font"
+font-size = 10
+theme = "Catppuccin Mocha"
+confirm-close-surface = false
