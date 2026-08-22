@@ -1,37 +1,14 @@
-------------------
----- MONITORS ----
-------------------
-hl.monitor({
-    output   = "HDMI-A-1",
-    mode     = "7680x2160@120",
-    position = "auto",
-    scale    = 1.5,
+-- Per-machine setup (monitors, and on laptops, gestures) lives in hosts/<hostname>.lua
+local hostnameFile = io.open("/etc/hostname", "r")
+local hostname = hostnameFile:read("l")
+hostnameFile:close()
+require("hosts." .. hostname)
 
-    bitdepth      = 10,
-    cm            = "hdr",
-    sdrbrightness = 1.2,
-    sdrsaturation = 0.9,
-    vrr           = 2,
-})
-
-hl.monitor({
-    output   = "HDMI-A-2",
-    mode     = "2560x2880",
-    position = "0x0",
-    scale    = 1.5,
-})
-
-
----------------------
----- MY PROGRAMS ----
 local terminal    = "ghostty"
 local browser     = "firefox"
 local fileManager = "nemo"
 local menu        = "rofi -show drun"
 
--------------------
----- AUTOSTART ----
--------------------
 hl.on("hyprland.start", function () 
   hl.exec_cmd(terminal)
   hl.exec_cmd("hypridle & swaync")
@@ -45,8 +22,8 @@ hl.env("HYPRCURSOR_SIZE", "24")
 hl.env("GDK_BACKEND", "wayland")
 hl.env("QT_QPA_PLATFORM", "wayland")
 hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")
-hl.env("LIBVA_DRIVER_NAME", "nvidia")
-hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+-- hl.env("LIBVA_DRIVER_NAME", "nvidia")
+-- hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 hl.env("_JAVA_OPTIONS,-Dawt.useSystemAAFontSettings=lcd -Dswing.aatext", "true")
 
 -----------------------
@@ -124,10 +101,8 @@ hl.animation({ leaf = "workspacesIn",  enabled = true,  speed = 1.21, bezier = "
 hl.animation({ leaf = "workspacesOut", enabled = true,  speed = 1.94, bezier = "almostLinear", style = "fade" })
 hl.animation({ leaf = "zoomFactor",    enabled = true,  speed = 7,    bezier = "quick" })
 
--- Ref https://wiki.hypr.land/Configuring/Basics/Workspace-Rules/
--- Odyssey G9 (ultrawide) scrolls horizontally (the default below);
--- the DualUp is portrait-ish, so its workspace scrolls vertically instead.
-hl.workspace_rule({ workspace = "6", monitor = "HDMI-A-2", default = true, layout_opts = { direction = "down" } })
+-- Per-machine workspace rules (e.g. windsor-pc's DualUp scrolling direction)
+-- live in hosts/<hostname>.lua, alongside that machine's monitor setup.
 
 -- "Smart gaps" / "No gaps when only"
 hl.workspace_rule({ workspace = "w[tv1]", gaps_out = 0, gaps_in = 0 })
@@ -163,23 +138,13 @@ hl.config({
         force_default_wallpaper = 0,    -- Set to 0 or 1 to disable the anime mascot wallpapers
         disable_hyprland_logo   = true, -- If true disables the random hyprland logo / anime girl background. :(
     },
-})
-
--- XWayland apps (Steam, etc.) don't handle fractional monitor scaling
--- (1.5x here) well and end up blur-upscaled otherwise.
-hl.config({
     xwayland = {
         force_zero_scaling = true,
     },
-})
-
--- might help with sdr games
-hl.config({
     render = {
         direct_scanout = 0,
     },
 })
-
 
 ---------------
 ---- INPUT ----
@@ -244,6 +209,14 @@ hl.bind(mainMod .. " + SHIFT + J", hl.dsp.window.swap({ direction = "d" }))
 hl.bind(mainMod .. " + period", hl.dsp.layout("move +col"))
 hl.bind(mainMod .. " + comma",  hl.dsp.layout("move -col"))
 
+-- Same, via the mouse side buttons (BTN_SIDE / BTN_EXTRA)
+hl.bind(mainMod .. " + mouse:276", hl.dsp.layout("move +col"))
+hl.bind(mainMod .. " + mouse:275", hl.dsp.layout("move -col"))
+
+-- Same, via horizontal scroll (wheel tilt / trackpad two-finger swipe)
+hl.bind(mainMod .. " + mouse_right", hl.dsp.layout("move +col"))
+hl.bind(mainMod .. " + mouse_left",  hl.dsp.layout("move -col"))
+
 -- Reorder: swap the active column/row with its neighbor
 hl.bind(mainMod .. " + ALT + period", hl.dsp.layout("swapcol r"))
 hl.bind(mainMod .. " + ALT + comma",  hl.dsp.layout("swapcol l"))
@@ -286,12 +259,6 @@ hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_S
 --------------------------------
 ---- WINDOWS AND WORKSPACES ----
 --------------------------------
-
--- See https://wiki.hypr.land/Configuring/Basics/Window-Rules/
--- and https://wiki.hypr.land/Configuring/Basics/Workspace-Rules/
-
--- Example window rules that are useful
-
 local suppressMaximizeRule = hl.window_rule({
     -- Ignore maximize requests from all apps. You'll probably like this.
     name  = "suppress-maximize-events",
